@@ -42,35 +42,35 @@
    CONFIG
    ═══════════════════════════════════════════════════════ */
 const CFG = {
-  CAPTURE_FPS:    24,      // frames to extract per second of video
-  CAPTURE_W:      854,     // extraction width (480p widescreen)
-  CAPTURE_H:      480,     // extraction height
-  CAPTURE_SPEED:  4,       // playback rate during extraction phase
-  SCROLL_VH:      3.5,     // scroll zone height multiplier
-  DISPLAY_LERP:   0.45,    // frame-index lerp (0=instant, 1=frozen)
-  MAX_DPR:        2,       // device pixel ratio cap
+  CAPTURE_FPS: 24,      // frames to extract per second of video
+  CAPTURE_W: 854,     // extraction width (480p widescreen)
+  CAPTURE_H: 480,     // extraction height
+  CAPTURE_SPEED: 4,       // playback rate during extraction phase
+  SCROLL_VH: 3.5,     // scroll zone height multiplier
+  DISPLAY_LERP: 0.45,    // frame-index lerp (0=instant, 1=frozen)
+  MAX_DPR: 2,       // device pixel ratio cap
 };
 
 /* ═══════════════════════════════════════════════════════
    STATE
    ═══════════════════════════════════════════════════════ */
-let frames        = [];   // Array<ImageBitmap> — pre-decoded GPU textures
-let framesReady   = false;
-let rawScrollY    = 0;    // Updated by native scroll listener
-let displayIdx    = 0;    // Lerped frame index (for smooth transitions)
+let frames = [];   // Array<ImageBitmap> — pre-decoded GPU textures
+let framesReady = false;
+let rawScrollY = 0;    // Updated by native scroll listener
+let displayIdx = 0;    // Lerped frame index (for smooth transitions)
 let ctx, cssW, cssH;      // Canvas context + CSS dimensions
 
 /* ═══════════════════════════════════════════════════════
    DOM ELEMENTS
    ═══════════════════════════════════════════════════════ */
-const $video  = document.getElementById('heroVideo');
+const $video = document.getElementById('heroVideo');
 const $canvas = document.getElementById('heroCanvas');
 const $loader = document.getElementById('preloader');
-const $fill   = document.getElementById('preloaderFill');
-const $label  = document.getElementById('preloaderLabel');
-const $nav    = document.getElementById('nav');
-const $hero   = document.getElementById('heroContent');
-const $cue    = document.getElementById('scrollCue');
+const $fill = document.getElementById('preloaderFill');
+const $label = document.getElementById('preloaderLabel');
+const $nav = document.getElementById('nav');
+const $hero = document.getElementById('heroContent');
+const $cue = document.getElementById('scrollCue');
 
 /* iOS detection — canvas.drawImage(video) is blocked on iOS */
 const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
@@ -80,8 +80,8 @@ const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
    ═══════════════════════════════════════════════════════ */
 function setupCanvas() {
   ctx = $canvas.getContext('2d', {
-    alpha:              false,  // No alpha compositing cost
-    desynchronized:     true,   // Async GPU upload — reduces frame latency
+    alpha: false,  // No alpha compositing cost
+    desynchronized: true,   // Async GPU upload — reduces frame latency
     willReadFrequently: false,
   });
   resizeCanvas();
@@ -92,9 +92,9 @@ function resizeCanvas() {
   const dpr = Math.min(window.devicePixelRatio || 1, CFG.MAX_DPR);
   cssW = window.innerWidth;
   cssH = window.innerHeight;
-  $canvas.width  = Math.round(cssW * dpr);
+  $canvas.width = Math.round(cssW * dpr);
   $canvas.height = Math.round(cssH * dpr);
-  $canvas.style.width  = cssW + 'px';
+  $canvas.style.width = cssW + 'px';
   $canvas.style.height = cssH + 'px';
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.scale(dpr, dpr);
@@ -121,13 +121,13 @@ function coverDraw(bmp) {
   const cH = cssH;
 
   /* Scale factor: use whichever axis needs to grow MORE to cover canvas */
-  const scale  = Math.max(cW / bW, cH / bH);
-  const drawW  = bW * scale;
-  const drawH  = bH * scale;
+  const scale = Math.max(cW / bW, cH / bH);
+  const drawW = bW * scale;
+  const drawH = bH * scale;
 
   /* Center — negative offset crops the overflow edges */
-  const drawX  = (cW - drawW) / 2;
-  const drawY  = (cH - drawH) / 2;
+  const drawX = (cW - drawW) / 2;
+  const drawY = (cH - drawH) / 2;
 
   ctx.drawImage(bmp, drawX, drawY, drawW, drawH);
 }
@@ -148,7 +148,7 @@ function drawFrameAt(idx) {
    ═══════════════════════════════════════════════════════ */
 function captureViaRVFC(capCanvas, capCtx) {
   return new Promise(async (resolve, reject) => {
-    const interval   = 1 / CFG.CAPTURE_FPS;
+    const interval = 1 / CFG.CAPTURE_FPS;
     const bitmapJobs = [];  // Promises<ImageBitmap>
     let lastCapturedT = -interval;
     let done = false;
@@ -163,7 +163,7 @@ function captureViaRVFC(capCanvas, capCtx) {
       bitmapJobs.push(createImageBitmap(capCanvas));
 
       $video.pause();
-      $video.currentTime  = 0;
+      $video.currentTime = 0;
       $video.playbackRate = 1;
 
       setProgress(85);
@@ -175,7 +175,7 @@ function captureViaRVFC(capCanvas, capCtx) {
     /* 'ended' is the definitive signal — fires when video hits its end */
     $video.addEventListener('ended', finish, { once: true });
 
-    $video.currentTime  = 0;
+    $video.currentTime = 0;
     $video.playbackRate = CFG.CAPTURE_SPEED;
 
     try {
@@ -189,7 +189,7 @@ function captureViaRVFC(capCanvas, capCtx) {
     function onFrame() {
       if (done) return;
 
-      const t   = $video.currentTime;
+      const t = $video.currentTime;
       const dur = $video.duration;
 
       /* Capture a frame every (interval) seconds of video time */
@@ -217,7 +217,7 @@ function captureViaRVFC(capCanvas, capCtx) {
    is always captured.
    ═══════════════════════════════════════════════════════ */
 async function captureViaSeek(capCanvas, capCtx) {
-  const dur   = $video.duration;
+  const dur = $video.duration;
   const total = Math.ceil(dur * CFG.CAPTURE_FPS);
   const bitmaps = [];
 
@@ -252,7 +252,7 @@ async function extractFrames() {
     : CFG.CAPTURE_H;
 
   const capCanvas = document.createElement('canvas');
-  capCanvas.width  = CFG.CAPTURE_W;
+  capCanvas.width = CFG.CAPTURE_W;
   capCanvas.height = aspectH;
   const capCtx = capCanvas.getContext('2d');
 
@@ -286,9 +286,9 @@ function startRenderLoop() {
     if (!framesReady || !frames.length) return;
 
     // Scroll → target frame index (direct, no lerp on target)
-    const scrubDist  = window.innerHeight * CFG.SCROLL_VH;
-    const progress   = Math.max(0, Math.min(1, rawScrollY / scrubDist));
-    const targetIdx  = progress * maxIdx;
+    const scrubDist = window.innerHeight * CFG.SCROLL_VH;
+    const progress = Math.max(0, Math.min(1, rawScrollY / scrubDist));
+    const targetIdx = progress * maxIdx;
 
     // Lerp display index for buttery smooth transitions between frames
     const diff = targetIdx - displayIdx;
@@ -334,7 +334,7 @@ function updateHeroFade() {
   if (!$hero) return;
   const fadeEnd = window.innerHeight * 0.38;
   const p = Math.min(1, rawScrollY / fadeEnd);
-  $hero.style.opacity   = (1 - p).toFixed(3);
+  $hero.style.opacity = (1 - p).toFixed(3);
   $hero.style.transform = `translateY(${(-p * 36).toFixed(1)}px)`;
 }
 
@@ -345,16 +345,23 @@ function updateHeroFade() {
 function initIOSMode() {
   // Canvas can't receive video frames on iOS — show video instead
   $canvas.style.display = 'none';
+
+  // Remove the off-screen hiding class (top:-9999px; left:-9999px; contain:strict)
+  // so there is no CSS conflict when we position the video on screen.
+  $video.classList.remove('hero__video-source');
+
   Object.assign($video.style, {
     position: 'absolute',
-    inset: '0',
+    top: '0',
+    left: '0',
+    right: '0',
+    bottom: '0',
     width: '100%',
     height: '100%',
     objectFit: 'cover',
-    objectPosition: 'center',
+    objectPosition: 'center center',
     opacity: '1',
-    top: '',
-    left: '',
+    zIndex: '1',
   });
 
   // Direct currentTime control (no canvas pipeline)
@@ -368,7 +375,7 @@ function initIOSMode() {
     const d = tgtT - curT;
     if (Math.abs(d) > 0.016) {
       curT += d * 0.12;
-      try { $video.currentTime = curT; } catch (_) {}
+      try { $video.currentTime = curT; } catch (_) { }
     }
   }
   iosLoop();
@@ -387,14 +394,14 @@ function startAtmosphereFallback() {
     ctx.fillStyle = '#040302';
     ctx.fillRect(0, 0, w, h);
 
-    const p  = 0.5 + 0.5 * Math.sin(t * 0.38);
-    const g1 = ctx.createRadialGradient(w*.5, h*.55, 0, w*.5, h*.55, w*.52);
-    g1.addColorStop(0,  `rgba(200,134,10,${(.07 + p * .04).toFixed(3)})`);
+    const p = 0.5 + 0.5 * Math.sin(t * 0.38);
+    const g1 = ctx.createRadialGradient(w * .5, h * .55, 0, w * .5, h * .55, w * .52);
+    g1.addColorStop(0, `rgba(200,134,10,${(.07 + p * .04).toFixed(3)})`);
     g1.addColorStop(.5, `rgba(43,31,20,${(.18 + p * .05).toFixed(3)})`);
-    g1.addColorStop(1,  'rgba(4,3,2,0)');
+    g1.addColorStop(1, 'rgba(4,3,2,0)');
     ctx.fillStyle = g1; ctx.fillRect(0, 0, w, h);
 
-    const g2 = ctx.createRadialGradient(w*.5, h*.5, 0, w*.5, h*.5, w*.2);
+    const g2 = ctx.createRadialGradient(w * .5, h * .5, 0, w * .5, h * .5, w * .2);
     g2.addColorStop(0, `rgba(212,168,67,${(.04 + p * .03).toFixed(3)})`);
     g2.addColorStop(1, 'rgba(4,3,2,0)');
     ctx.fillStyle = g2; ctx.fillRect(0, 0, w, h);
@@ -403,7 +410,7 @@ function startAtmosphereFallback() {
       const sx = w * (.41 + i * .09), ph = t + i * 1.6;
       ctx.beginPath();
       ctx.moveTo(sx, h * .52);
-      ctx.bezierCurveTo(sx + 9*Math.sin(ph), h*.43, sx - 7*Math.sin(ph+1), h*.35, sx + 6*Math.sin(ph+2), h*.26);
+      ctx.bezierCurveTo(sx + 9 * Math.sin(ph), h * .43, sx - 7 * Math.sin(ph + 1), h * .35, sx + 6 * Math.sin(ph + 2), h * .26);
       ctx.strokeStyle = `rgba(212,168,67,${(.05 + p * .04).toFixed(3)})`;
       ctx.lineWidth = .9; ctx.stroke();
     }
@@ -486,7 +493,7 @@ function initCursorGlow() {
   window.addEventListener('mousemove', (e) => { tx = e.clientX; ty = e.clientY; }, { passive: true });
   (function tick() {
     cx += (tx - cx) * 0.07; cy += (ty - cy) * 0.07;
-    el.style.transform = `translate(${(cx-150).toFixed(1)}px,${(cy-150).toFixed(1)}px)`;
+    el.style.transform = `translate(${(cx - 150).toFixed(1)}px,${(cy - 150).toFixed(1)}px)`;
     requestAnimationFrame(tick);
   })();
 }
@@ -499,7 +506,7 @@ function initMagneticBtn() {
   document.querySelectorAll('.btn--primary').forEach((btn) => {
     btn.addEventListener('mousemove', (e) => {
       const r = btn.getBoundingClientRect();
-      btn.style.transform = `translate(${((e.clientX-(r.left+r.width/2))*.2).toFixed(1)}px,${((e.clientY-(r.top+r.height/2))*.2).toFixed(1)}px)`;
+      btn.style.transform = `translate(${((e.clientX - (r.left + r.width / 2)) * .2).toFixed(1)}px,${((e.clientY - (r.top + r.height / 2)) * .2).toFixed(1)}px)`;
     });
     btn.addEventListener('mouseleave', () => { btn.style.transform = ''; });
   });
@@ -529,9 +536,9 @@ function initCountUp() {
    HERO INTRO
    ═══════════════════════════════════════════════════════ */
 function playIntro() {
-  setTimeout(() => $nav?.classList.add('is-in'),    200);
-  setTimeout(() => $hero?.classList.add('is-in'),   580);
-  setTimeout(() => $cue?.classList.add('is-in'),   1700);
+  setTimeout(() => $nav?.classList.add('is-in'), 200);
+  setTimeout(() => $hero?.classList.add('is-in'), 580);
+  setTimeout(() => $cue?.classList.add('is-in'), 1700);
 }
 
 /* ═══════════════════════════════════════════════════════
