@@ -43,11 +43,12 @@
    ═══════════════════════════════════════════════════════ */
 const CFG = {
   CAPTURE_FPS: 24,      // frames to extract per second of video
-  CAPTURE_W: 854,       // extraction width (480p widescreen)
-  CAPTURE_H: 480,       // extraction height
-  CAPTURE_SPEED: 4,     // playback rate during extraction phase
-  SCROLL_VH: 3.5,       // scroll zone height multiplier
-  MAX_DPR: 2,           // device pixel ratio cap
+  CAPTURE_W: 854,     // extraction width (480p widescreen)
+  CAPTURE_H: 480,     // extraction height
+  CAPTURE_SPEED: 4,       // playback rate during extraction phase
+  SCROLL_VH: 3.5,     // scroll zone height multiplier
+  DISPLAY_LERP: 0.45,    // frame-index lerp (0=instant, 1=frozen)
+  MAX_DPR: 2,       // device pixel ratio cap
 };
 
 /* ═══════════════════════════════════════════════════════
@@ -284,17 +285,21 @@ function startRenderLoop() {
     requestAnimationFrame(loop);
     if (!framesReady || !frames.length) return;
 
-    // Scroll → target frame index
+    // Scroll → target frame index (direct, no lerp on target)
     const scrubDist = window.innerHeight * CFG.SCROLL_VH;
     const progress = Math.max(0, Math.min(1, rawScrollY / scrubDist));
     const targetIdx = progress * maxIdx;
 
-    // Snap directly — ImageBitmap GPU blit is ~0.1ms, no lerp needed.
-    // Lerp only added lag on scroll-up without any visual benefit.
-    if (targetIdx !== displayIdx) {
-      displayIdx = targetIdx;
-      drawFrameAt(displayIdx);
+    // Lerp display index for buttery smooth transitions between frames
+    const diff = targetIdx - displayIdx;
+    if (Math.abs(diff) > 0.01) {
+      displayIdx += diff * CFG.DISPLAY_LERP;
+    } else {
+      displayIdx = targetIdx; // Snap when very close
     }
+
+    // Draw — this is a GPU blit, ~0.1ms. Zero lag.
+    drawFrameAt(displayIdx);
   }
 
   requestAnimationFrame(loop);
