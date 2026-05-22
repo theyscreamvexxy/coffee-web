@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="description" content="Obscura — Rare. Dark. Unforgettable. A luxury cinematic coffee experience born from obsession with the perfect cup." />
+  <meta name="theme-color" content="#040302" />
+  <title>Obscura — Rare Coffee</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Inter:wght@100;200;300;400&display=swap" rel="stylesheet" />
+
+  <!-- CDN: GSAP + ScrollTrigger -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- Preload hint: lets browser start fetching video alongside CSS/fonts -->
+  <link rel="preload" as="fetch" href="assets/hero-coffee-video.mp4" crossorigin="anonymous" />
+</head>
+<body>
+
+  <!-- ═══ PRELOADER ═══ -->
+  <div class="preloader" id="preloader" aria-label="Loading" role="status">
+    <div class="preloader__inner">
+      <div class="preloader__brand">OBSCURA</div>
+      <div class="preloader__track">
+        <div class="preloader__fill" id="preloaderFill"></div>
+      </div>
+      <div class="preloader__label" id="preloaderLabel">Preparing your experience</div>
+    </div>
+  </div>
+
+  <!-- ═══ GLOBAL OVERLAYS ═══ -->
+  <div class="grain-overlay"   aria-hidden="true"></div>
+  <div class="vignette-overlay" aria-hidden="true"></div>
+
+  <!-- ═══ NAVIGATION ═══ -->
+  <nav class="nav" id="nav" role="navigation" aria-label="Main navigation">
+    <div class="nav__logo">
+      <span class="nav__logo-text">OBSCURA</span>
+    </div>
+    <ul class="nav__links" role="list">
+      <li><a href="#story"      class="nav__link">Story</a></li>
+      <li><a href="#experience" class="nav__link">Experience</a></li>
+      <li><a href="#cta"        class="nav__link nav__link--cta">Reserve</a></li>
+    </ul>
+  </nav>
+
+  <!-- ═══════════════════════════════════════════════════
+       HERO SCROLL ZONE
+       The outer div is tall (4.5 × 100vh) to provide scroll
+       distance. The inner .hero is position:sticky so it
+       pins in place while the user scrolls through the zone.
+  ════════════════════════════════════════════════════════ -->
+  <div class="hero-scroll-zone" id="heroScrollZone">
+    <section class="hero" id="hero" aria-label="Cinematic hero — scroll to explore">
+
+      <!-- Canvas: where video frames are painted (GPU-composited) -->
+      <canvas class="hero__canvas" id="heroCanvas" aria-hidden="true"></canvas>
+
+      <!-- Hidden video element — never displayed, only used as decode source -->
+      <video
+        class="hero__video-source"
+        id="heroVideo"
+        src="assets/hero-coffee-video.mp4"
+        muted
+        playsinline
+        preload="auto"
+        tabindex="-1"
+        aria-hidden="true"
+      ></video>
+
+
+
+      <!-- Ambient lighting gradient -->
+      <div class="hero__ambient" aria-hidden="true"></div>
+
+      <!-- Content overlay -->
+      <div class="hero__content" id="heroContent">
+        <div class="hero__eyebrow">Est. 2024 · Single Origin</div>
+        <h1 class="hero__headline">
+          <span class="hero__hl-line">Rare.</span>
+          <span class="hero__hl-line">Dark.</span>
+          <span class="hero__hl-line hero__hl-line--stroke">Unforgettable.</span>
+        </h1>
+        <p class="hero__subtitle">A coffee so rare, it exists only at the edge of obsession.</p>
+      </div>
+
+      <!-- Scroll cue -->
+      <div class="hero__scroll-cue" id="scrollCue" aria-label="Scroll to explore">
+        <span class="hero__scroll-text">Scroll</span>
+        <div class="hero__scroll-track"><div class="hero__scroll-pip"></div></div>
+      </div>
+
+      <!-- Bottom gradient bleed into next section -->
+      <div class="hero__bottom-fade" aria-hidden="true"></div>
+
+    </section>
+  </div><!-- /heroScrollZone -->
+
+
+  <!-- ═══ BRAND STORY ═══ -->
+  <section class="story" id="story" aria-labelledby="storyHeading">
+    <div class="story__ambient-l" aria-hidden="true"></div>
+    <div class="story__ambient-r" aria-hidden="true"></div>
+    <div class="story__inner">
+      <div class="story__overline reveal">Origin</div>
+      <h2 class="story__headline reveal" id="storyHeading">
+        <em>Born from the silence</em><br />of high-altitude farms.
+      </h2>
+      <div class="story__rule reveal" aria-hidden="true"></div>
+      <p class="story__body reveal">
+        At 2,400 metres above sea level, where mist never clears and the air is thin,
+        our beans absorb decades of volcanic soil. Each harvest is hand-selected at
+        the peak of ripeness — a ritual unchanged for three generations.
+      </p>
+      <p class="story__body story__body--dim reveal">
+        Obscura is not mass-produced. It cannot be.
+      </p>
+      <div class="story__stats reveal">
+        <div class="story__stat">
+          <span class="story__stat-n" data-target="2400">0</span>
+          <span class="story__stat-l">Metres elevation</span>
+        </div>
+        <div class="story__stat-sep" aria-hidden="true"></div>
+        <div class="story__stat">
+          <span class="story__stat-n" data-target="48">0</span>
+          <span class="story__stat-l">Hours fermentation</span>
+        </div>
+        <div class="story__stat-sep" aria-hidden="true"></div>
+        <div class="story__stat">
+          <span class="story__stat-n" data-target="1">0</span>
+          <span class="story__stat-l">Estate, always</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ═══ EXPERIENCE PILLARS ═══ -->
+  <section class="experience" id="experience" aria-labelledby="expHeading">
+    <div class="experience__header">
+      <div class="experience__overline reveal">The Craft</div>
+      <h2 class="experience__headline reveal" id="expHeading">
+        Every detail<br /><em>considered.</em>
+      </h2>
+    </div>
+
+    <div class="pillars">
+
+      <article class="pillar reveal" id="pillar-origin">
+        <div class="pillar__icon" aria-hidden="true">
+          <svg viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="18" stroke="currentColor" stroke-width="0.75"/><path d="M24 6C24 6 14 15 14 24C14 33 24 42 24 42" stroke="currentColor" stroke-width="0.75"/><path d="M24 6C24 6 34 15 34 24C34 33 24 42 24 42" stroke="currentColor" stroke-width="0.75"/><line x1="6" y1="24" x2="42" y2="24" stroke="currentColor" stroke-width="0.75"/></svg>
+        </div>
+        <div class="pillar__glow" aria-hidden="true"></div>
+        <h3 class="pillar__title">Single Origin</h3>
+        <p class="pillar__body">Traceable to a single estate in the Ethiopian highlands. Every bag tells the story of one place.</p>
+        <div class="pillar__border-glow" aria-hidden="true"></div>
+      </article>
+
+      <article class="pillar pillar--hero reveal" id="pillar-roast">
+        <div class="pillar__icon" aria-hidden="true">
+          <svg viewBox="0 0 48 48" fill="none"><path d="M24 8L24 16" stroke="currentColor" stroke-width="0.75" stroke-linecap="round"/><path d="M12 12L18 18" stroke="currentColor" stroke-width="0.75" stroke-linecap="round"/><path d="M36 12L30 18" stroke="currentColor" stroke-width="0.75" stroke-linecap="round"/><circle cx="24" cy="26" r="10" stroke="currentColor" stroke-width="0.75"/><circle cx="24" cy="26" r="4" stroke="currentColor" stroke-width="0.5"/><path d="M24 36L24 42" stroke="currentColor" stroke-width="0.75" stroke-linecap="round"/></svg>
+        </div>
+        <div class="pillar__glow pillar__glow--on" aria-hidden="true"></div>
+        <h3 class="pillar__title">Dark Roast Mastery</h3>
+        <p class="pillar__body">Roasted to a precise 224°C in micro-batches of 12 kg. A process taking four minutes of pure focus.</p>
+        <div class="pillar__border-glow" aria-hidden="true"></div>
+      </article>
+
+      <article class="pillar reveal" id="pillar-ritual">
+        <div class="pillar__icon" aria-hidden="true">
+          <svg viewBox="0 0 48 48" fill="none"><path d="M16 36C16 36 16 18 24 14C32 18 32 36 32 36" stroke="currentColor" stroke-width="0.75" stroke-linecap="round"/><path d="M13 36L35 36" stroke="currentColor" stroke-width="0.75" stroke-linecap="round"/><path d="M32 20C32 20 38 20 38 26C38 32 32 30 32 30" stroke="currentColor" stroke-width="0.75" stroke-linecap="round"/><path d="M10 40L38 40" stroke="currentColor" stroke-width="0.75" stroke-linecap="round"/><path d="M24 14C24 14 24 8 20 6" stroke="currentColor" stroke-width="0.5" stroke-linecap="round"/><path d="M24 14C24 14 26 8 29 7" stroke="currentColor" stroke-width="0.5" stroke-linecap="round"/></svg>
+        </div>
+        <div class="pillar__glow" aria-hidden="true"></div>
+        <h3 class="pillar__title">The Ritual</h3>
+        <p class="pillar__body">Extracted at 9 bar for exactly 27 seconds. Obscura demands patience — and rewards it.</p>
+        <div class="pillar__border-glow" aria-hidden="true"></div>
+      </article>
+
+    </div>
+  </section>
+
+
+  <!-- ═══ QUOTE ═══ -->
+  <section class="quote-section" aria-label="Brand philosophy">
+    <div class="quote-section__glow" aria-hidden="true"></div>
+    <blockquote class="quote reveal">
+      <span class="quote__mark" aria-hidden="true">"</span>
+      <p class="quote__text">
+        The finest coffee in the world<br />
+        should feel like the finest thing<br />
+        in the world.
+      </p>
+      <footer class="quote__attr">
+        <span class="quote__dash">—</span> Founder, Obscura
+      </footer>
+    </blockquote>
+  </section>
+
+
+  <!-- ═══ CTA ═══ -->
+  <section class="cta" id="cta" aria-labelledby="ctaHeading">
+    <div class="cta__glow-top"    aria-hidden="true"></div>
+    <div class="cta__glow-bottom" aria-hidden="true"></div>
+    <div class="cta__inner">
+      <div class="cta__overline reveal">Limited Release · 2024</div>
+      <h2 class="cta__headline reveal" id="ctaHeading">
+        Reserve your<br /><em>first bag.</em>
+      </h2>
+      <p class="cta__sub reveal">Only 240 bags allocated per harvest.<br />No exceptions.</p>
+      <div class="cta__btns reveal">
+        <a href="#" class="btn btn--primary" id="reserveBtn">
+          <span class="btn__label">Reserve Now</span>
+          <span class="btn__shimmer" aria-hidden="true"></span>
+        </a>
+        <a href="#story" class="btn btn--ghost" id="learnBtn">Learn the story</a>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ═══ FOOTER ═══ -->
+  <footer class="footer" role="contentinfo">
+    <div class="footer__inner">
+      <div class="footer__brand">
+        <span class="footer__logo">OBSCURA</span>
+        <span class="footer__tag">Rare. Dark. Unforgettable.</span>
+      </div>
+      <nav class="footer__nav" aria-label="Footer links">
+        <a href="#" class="footer__link">Privacy</a>
+        <a href="#" class="footer__link">Terms</a>
+        <a href="#" class="footer__link">Contact</a>
+      </nav>
+      <p class="footer__copy">&copy; 2024 Obscura Coffee. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
